@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        <title>reveal.js</title>
+        <title>How OVH build, deploy and run OpenStack on production</title>
 
         <link rel="stylesheet" href="dist/reset.css">
         <link rel="stylesheet" href="dist/reveal.css">
@@ -22,17 +22,17 @@
                     ![OVH](data/ovh3.png)
                 </section>
                 <section data-markdown data-background="data/slide.png">
-                    ## Today topic
-                    * History of Public Cloud Infrastructure (PCI)
-                    * Team organization
-                    * OpenStack and OVH architecture
-                    * Bonus: tech details regarding OVH/OpenStack networking
+                    ## Today main topics
+                    * OVH and Public Cloud Infrastructure (PCI)
+                    * OVH OpenStack architecture
+                    * Team organization and day to day workflow
                 </section>
 
                 <!-- intro -->
                 <section data-background="data/slide.png">
                     <section data-markdown>
                         ## Who am I?
+                        #### Arnaud Morin
                     </section>
                     <section data-markdown>
                         ## What is PCI?
@@ -48,11 +48,12 @@
 
                     <section data-markdown>
                         #### Public Cloud Infrastructure
+                        * Run OpenStack in production
                         * Compute
                           * instance (nova)
                           * network (neutron)
                           * image (glance)
-                          * ... and more ...
+                          * ... and many more ...
                     </section>
                     <section data-markdown>
                         #### Public Cloud Infrastructure
@@ -75,11 +76,16 @@
                     </section>
                     <section data-markdown>
                         ## Numbers
-                        * 22k hypervisors
-                        * 900k cores
+                        * 22k hypervisors (dedicated servers)
+                        * 900k cpu cores
                         * xx PT in ceph
-                        * ~40 regions
+                        * ~40 regions (in 8 countries around world)
                         * ~30 people (in SRE/DevOps team)
+                          * France
+                          * Canada
+                          * US
+                          * UK
+                          * Poland
                     </section>
                 </section>
 
@@ -95,13 +101,13 @@
                     <section data-markdown>
                         ## #1 reduce silo
                         * we share ownership of the product
-                        * developers/sysadmin are the same people
+                        * developers/operators are the same person
                     </section>
                     <section data-markdown>
                         ## #2 system can(will) fail
                         * we accept failure
                         * continuous improvment
-                        * tools
+                        * tools and docs
                         * post mortems
                     </section>
                     <section data-markdown>
@@ -151,12 +157,13 @@
                 <!-- Architecture -->
                 <section data-background="data/slide.png">
                     <section data-markdown>
-                        ## Architecture
+                        ## OVH OpenStack
+                        #### architecture
                     </section>
                     <section data-markdown data-background="data/osog_0001.png" data-background-color="white" data-background-size="contain">
                     </section>
                     <section data-markdown data-background="data/osog_0001.b.png" data-background-color="white" data-background-size="contain">
-                        * APIs
+                        * OpenStack APIs (control plane)
                           * keystone is unique, connecting all regions together
                           * all other components are regionalized
                           * Load Balancers in front of all HTTP APIs
@@ -164,13 +171,13 @@
                     </section>
                     <section data-markdown data-background="data/osog_0001.b.png" data-background-color="white" data-background-size="contain">
                         * MariaDB
-                          * Load Balancer in front
+                          * Load Balancer in front (haproxy)
                           * Minimum 3 backends in cluster (avoid split-brain issue)
                         * RabbitMQ
                           * Minimum 3 backends
                     </section>
                     <section data-markdown data-background="data/osog_0001.b.png" data-background-color="white" data-background-size="contain">
-                        * Agents
+                        * Agents (data plane)
                           * L2 + L3(dvr) + compute on all hypervisors
                           * L3(snat) on network nodes
                           * DHCP randomly installed on some hypervisors
@@ -183,17 +190,156 @@
                         ## Infrastructure management
                     </section>
                     <section data-markdown data-background="data/effet-mouton.jpg">
+                        ## Pet VS Cattle
+                    </section>
+                    <section data-markdown>
                         ## Hypervisors
-                        22k of hypervisors
+                        * Hypervisors are managed like a herd of sheep
+                        * Dedicated server is raw material for OVH
+                        * OVH custom fleet management API (and DB)
+                          * Moving toward a terraform compliant system
+                        * Lot of tools
+                          * Puppet to maintain server configuration
+                          * Ansible to orchestrate
+                          * Python and bash scripts as glue
                     </section>
-                    <section data-markdown data-background="data/ovh-bureaux-dx.png">
-                        ## Remote Open Spaces!
-                        thanks to very effective video conference system
+                    <section data-markdown data-background="data/robots.gif">
+                        ## Automation
+                        ## Automation
+                        ## Automation
                     </section>
-                    <section data-markdown data-background="data/ovh-dx.png">
-                        ## Video conferences
+                    <section data-markdown>
+                        ## Automation is key
+                        * When a server for PCI is available in a rack:
+                          * Robot is creating a "cart" with new server
+                          * Order is billed
+                          * Bill is automatically paid by another robot
+                          * Server is delivered on PCI customer account
+                          * Server is then installed by another robot
+                          * Postinstallation is automatically executed
+                          * Puppet agent is executed
+                          * Server is added in OpenStack hypervisors
+                          * Ready to receive OpenStack instances!
+                    </section>
+                    <section data-markdown>
+                        ## Consistency is key
+                        * All my servers are sheeps
+                          * Sheeps behave identically if they are fed identically
+                        * With consistency, we can manage them in groups, not one by one
+                    </section>
+                    <section data-markdown>
+                        ## Git is key
+                        * Everything is in GIT
+                          * OpenStack code
+                          * Puppet / Ansible code
+                          * Probes
+                          * Tools
+                          * Configuration (parameters/data)
+                            * passwords also, but ciphered with a key
+                          * My laptop config
+                          * These slides
+                    </section>
+                    <section data-markdown>
+                        ## Everything is GIT
+                        * GIT is your history
+                        * GIT is your safety guard
+                          * Rollback is easy
+                          * Testing made easy
                     </section>
                 </section>
+
+                <!-- Day after day -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## Daily workflow
+                    </section>
+                    <section data-markdown>
+                        ## Example #1
+                    </section>
+                    <section data-markdown data-background="data/bug.gif" data-background-size="contain" data-background-color="white">
+                    </section>
+                    <section data-markdown>
+                        ## #1 Probe
+                        * Remember DevOps/SRE principle?
+                        * Count
+                        * Monitor
+                        * Alert
+                        * Avoid future occurence
+                    </section>
+                    <section data-markdown data-background="data/dig.gif">
+                        ## #2 Dig
+                    </section>
+                    <section data-markdown data-background="data/fix.gif">
+                        ## #3 Fix
+                    </section>
+                    <section data-markdown>
+                        ## #3 Fix
+                        * Fix source code (if relevent/possible)
+                        * Robot to fix for me the whole infra
+                          * Automate robot execution based on probe result (workflow)
+                    </section>
+                    <section data-markdown>
+                        ## Example #2
+                    </section>
+                    <section data-markdown data-background="data/new-feature.gif">
+                        ## New feature?
+                    </section>
+                    <section data-markdown>
+                        ## #1 Git your code
+                        Remember, this is your history
+                    </section>
+                    <section data-markdown>
+                        ## #2 Test your code
+                        Every SRE member has it's own "dev infra" which is a small OpenStack infra like production, with few number of computes
+                    </section>
+                    <section data-markdown>
+                        ## #3 Pull Request
+                        Ask for review from other SRE members
+                    </section>
+                    <section data-markdown>
+                        ## #3 Merge
+                    </section>
+                    <section data-markdown>
+                        ## #4 CI
+                        * Automated tests (may not apply on all projects):
+                          * unit tests
+                          * integration tests
+                          * functional tests
+                    </section>
+                    <section data-markdown>
+                        ## #5 CD
+                        Not fully :)
+                        * we still want a human to do a git/ansible command
+                          * using a tool and workflow (robots)
+                        * you dev --> you prod
+                          * developer is accountable for his work
+                    </section>
+                </section>
+
+                <!-- Bonus -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## Bonus
+                        OpenStack networking
+                    </section>
+                    <section data-markdown>
+                        ## Private networks
+                        aka vRack
+                    </section>
+                    <section data-markdown data-separator-notes="^Note:" data-background="data/vrack.png" data-background-size="contain">
+                    </section>
+                    <section data-markdown>
+                        ## Public networks
+                        aka BGP
+                    </section>
+                    <section data-markdown data-separator-notes="^Note:" data-background="data/BGP.png" data-background-size="contain">
+                    </section>
+                </section>
+
+                <section data-markdown data-background="data/camion_plot.gif">
+                    ## Questions ?
+                </section>
+
             </div>
         </div>
 
