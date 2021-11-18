@@ -1,0 +1,217 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <title>reveal.js</title>
+
+        <link rel="stylesheet" href="dist/reset.css">
+        <link rel="stylesheet" href="dist/reveal.css">
+        <link rel="stylesheet" href="css/theme/ovh.css">
+
+        <!-- Theme used for syntax highlighted code -->
+        <link rel="stylesheet" href="plugin/highlight/monokai.css">
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <!-- head -->
+                <section data-markdown data-background="data/slide.png">
+                    ### How OVH build, deploy and run OpenStack on production
+                    ![OVH](data/ovh3.png)
+                </section>
+                <section data-markdown data-background="data/slide.png">
+                    ## Today topic
+                    * History of Public Cloud Infrastructure (PCI)
+                    * Team organization
+                    * OpenStack and OVH architecture
+                    * Bonus: tech details regarding OVH/OpenStack networking
+                </section>
+
+                <!-- intro -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## Who am I?
+                    </section>
+                    <section data-markdown>
+                        ## What is PCI?
+                    </section>
+                    <section data-markdown data-background="data/it_crowd_1.gif">
+                        # OpenStack
+                        ![OpenStack](data/openstack_logo.png)
+                    </section>
+                    <section data-markdown data-background="data/it_crowd_2.gif">
+                        # Ceph
+                        ![Ceph](data/ceph_logo.png)
+                    </section>
+
+                    <section data-markdown>
+                        #### Public Cloud Infrastructure
+                        * Compute
+                          * instance (nova)
+                          * network (neutron)
+                          * image (glance)
+                          * ... and more ...
+                    </section>
+                    <section data-markdown>
+                        #### Public Cloud Infrastructure
+                        * Storage
+                          * object (swift)
+                          * block --> volume / disk for instances (cinder with ceph)
+                    </section>
+                </section>
+
+                <!-- history -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## History
+                        * 2012: HubiC (swift)
+                        * 2014: RunAbove (nova/neutron/etc.)
+                        * 2015: PCI (swift/nova/neutron/etc.)
+                          * first production grade region
+                          * replacing RunAbove
+                        * 2021: ~40 regions world wide
+                    </section>
+                    <section data-markdown>
+                        ## Numbers
+                        * 22k hypervisors
+                        * 900k cores
+                        * xx PT in ceph
+                        * ~40 regions
+                        * ~30 people (in SRE/DevOps team)
+                    </section>
+                </section>
+
+                <!-- devops / SRE -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## DevOps and SRE
+                        #### OVH implementation
+                    </section>
+                    <section data-markdown data-background="data/nerd-alert.gif">
+                        ## What is DevOps and SRE?
+                    </section>
+                    <section data-markdown>
+                        ## #1 reduce silo
+                        * we share ownership of the product
+                        * developers/sysadmin are the same people
+                    </section>
+                    <section data-markdown>
+                        ## #2 system can(will) fail
+                        * we accept failure
+                        * continuous improvment
+                        * tools
+                        * post mortems
+                    </section>
+                    <section data-markdown>
+                        ## #3 gradual changes
+                        * canary deployment using 1/10/100 mechanism
+                        * reduce cost of failure
+                    </section>
+                    <section data-markdown>
+                        ## #4 automation
+                        * reduce toil / repetitive tasks
+                        * reduce PEBKAC failure
+                    </section>
+                    <section data-markdown>
+                        ## #5 Measure and monitor
+                        * Probes (bash/python small scripts)
+                        * Prometheus (collector)
+                        * Monitoring
+                        * Alerting
+                    </section>
+                </section>
+
+                <!-- Team orga -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## Team work
+                    </section>
+                    <section data-markdown>
+                        ## Face to Face communication
+                        Good communication leads to efficiency
+                    </section>
+                    <section data-markdown data-background="data/ovh-bureaux.png">
+                        ## Open Spaces
+                    </section>
+                    <section data-markdown>
+                        ## Face to Face in remote?
+                        What if your team is splitted in multiple cities / countries?
+                    </section>
+                    <section data-background="data/ovh-bureaux-dx.png">
+                        <h2><span style='color:#ff2c2d'>Remote</span> Open Spaces!</h2>
+                        thanks to very effective video conference system
+                    </section>
+                    <section data-markdown data-background="data/ovh-dx.png">
+                        ## Video conferences
+                    </section>
+                </section>
+
+                <!-- Architecture -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## Architecture
+                    </section>
+                    <section data-markdown data-background="data/osog_0001.png" data-background-color="white" data-background-size="contain">
+                    </section>
+                    <section data-markdown data-background="data/osog_0001.b.png" data-background-color="white" data-background-size="contain">
+                        * APIs
+                          * keystone is unique, connecting all regions together
+                          * all other components are regionalized
+                          * Load Balancers in front of all HTTP APIs
+                          * At least 2 backends (A/A)
+                    </section>
+                    <section data-markdown data-background="data/osog_0001.b.png" data-background-color="white" data-background-size="contain">
+                        * MariaDB
+                          * Load Balancer in front
+                          * Minimum 3 backends in cluster (avoid split-brain issue)
+                        * RabbitMQ
+                          * Minimum 3 backends
+                    </section>
+                    <section data-markdown data-background="data/osog_0001.b.png" data-background-color="white" data-background-size="contain">
+                        * Agents
+                          * L2 + L3(dvr) + compute on all hypervisors
+                          * L3(snat) on network nodes
+                          * DHCP randomly installed on some hypervisors
+                    </section>
+                </section>
+
+                <!-- Management -->
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## Infrastructure management
+                    </section>
+                    <section data-markdown data-background="data/effet-mouton.jpg">
+                        ## Hypervisors
+                        22k of hypervisors
+                    </section>
+                    <section data-markdown data-background="data/ovh-bureaux-dx.png">
+                        ## Remote Open Spaces!
+                        thanks to very effective video conference system
+                    </section>
+                    <section data-markdown data-background="data/ovh-dx.png">
+                        ## Video conferences
+                    </section>
+                </section>
+            </div>
+        </div>
+
+        <script src="dist/reveal.js"></script>
+        <script src="plugin/notes/notes.js"></script>
+        <script src="plugin/markdown/markdown.js"></script>
+        <script src="plugin/highlight/highlight.js"></script>
+        <script>
+            // More info about initialization & config:
+            // - https://revealjs.com/initialization/
+            // - https://revealjs.com/config/
+            Reveal.initialize({
+                hash: true,
+                slideNumber: 'c/t',
+
+                // Learn about plugins: https://revealjs.com/plugins/
+                plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+            });
+        </script>
+    </body>
+</html>
